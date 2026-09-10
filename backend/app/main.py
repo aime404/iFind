@@ -8,6 +8,8 @@ from app.core.config import settings
 from app.api.v1.routes_auth import router as auth_router
 from app.api.v1.routes_reports import router as reports_router
 from app.api.v1.routes_matches import router as matches_router
+from app.api.v1.routes_notifications import router as notifications_router
+from app.api.v1.routes_admin import router as admin_router
 
 
 # Create FastAPI application instance
@@ -45,6 +47,18 @@ app.include_router(
     matches_router,
     prefix="/api/v1",
     tags=["Matches"]
+)
+
+app.include_router(
+    notifications_router,
+    prefix="/api/v1",
+    tags=["Notifications"]
+)
+
+app.include_router(
+    admin_router,
+    prefix="/api/v1",
+    tags=["Admin"]
 )
 
 

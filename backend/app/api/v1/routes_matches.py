@@ -8,6 +8,7 @@ from app.db.models.match import Match, MatchStatus
 from app.db.models.report import Report, ReportStatus
 from app.db.models.user import User
 from app.schemas.match import MatchResponse, MatchUpdate
+from app.services.audit_service import log_action
 
 
 router = APIRouter()
@@ -140,6 +141,15 @@ async def verify_match(
     db.commit()
     db.refresh(match)
     
+    # Log the action
+    log_action(
+        db=db,
+        action="match_verified",
+        performed_by=current_user.id,
+        target_type="match",
+        target_id=match.id
+    )
+    
     return MatchResponse.model_validate(match)
 
 
@@ -187,5 +197,14 @@ async def reject_match(
     
     db.commit()
     db.refresh(match)
+    
+    # Log the action
+    log_action(
+        db=db,
+        action="match_rejected",
+        performed_by=current_user.id,
+        target_type="match",
+        target_id=match.id
+    )
     
     return MatchResponse.model_validate(match)

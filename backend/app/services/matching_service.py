@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.db.models.report import Report, ReportStatus, ReportType
 from app.db.models.match import Match, MatchStatus
+from app.db.models.notification import Notification
 
 
 logger = logging.getLogger(__name__)
@@ -156,7 +157,7 @@ def find_potential_matches(report: Report, db: Session) -> list[dict]:
 
 def create_matches_for_report(report: Report, db: Session) -> list[Match]:
     """
-    Find potential matches for a report and create Match records.
+    Find potential matches for a report and create Match records and Notifications.
 
     Args:
         report: The Report object to find matches for
@@ -208,14 +209,38 @@ def create_matches_for_report(report: Report, db: Session) -> list[Match]:
                 )
 
                 db.add(new_match)
-                created_matches.append(new_match)
+                created_matches.append((new_match, report, candidate))
 
         if created_matches:
             db.commit()
-            for match in created_matches:
+            for match, input_report, candidate_report in created_matches:
                 db.refresh(match)
+                
+                # Create notifications for both report owners
+                lost_report = input_report if input_report.report_type == ReportType.LOST else candidate_report
+                found_report = candidate_report if input_report.report_type == ReportType.LOST else input_report
+                
+                # Notification for lost report owner
+                lost_notification = Notification(
+                    user_id=lost_report.user_id,
+                    message=f"Potential match found for your lost report: {lost_report.item_name}",
+                    is_read=False,
+                    related_match_id=match.id
+                )
+                db.add(lost_notification)
+                
+                # Notification for found report owner
+                found_notification = Notification(
+                    user_id=found_report.user_id,
+                    message=f"Potential match found for your found report: {found_report.item_name}",
+                    is_read=False,
+                    related_match_id=match.id
+                )
+                db.add(found_notification)
+            
+            db.commit()
 
-        return created_matches
+        return [match for match, _, _ in created_matches]
 
     except Exception as e:
         logger.error(f"Error creating matches for report {report.id}: {str(e)}")
