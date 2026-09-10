@@ -1,8 +1,12 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.api.v1.routes_auth import router as auth_router
+from app.api.v1.routes_reports import router as reports_router
 
 
 # Create FastAPI application instance
@@ -29,6 +33,18 @@ app.include_router(
     prefix="/api/v1/auth",
     tags=["Authentication"]
 )
+
+app.include_router(
+    reports_router,
+    prefix="/api/v1",
+    tags=["Reports"]
+)
+
+
+# Mount static files for uploads
+uploads_dir = Path(__file__).parent / "uploads"
+uploads_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 
 
 # Health check endpoint
