@@ -6,7 +6,7 @@ from app.core.config import settings
 
 
 # Create SQLAlchemy engine
-engine = create_engine(settings.DATABASE_URL, echo=False)
+engine = create_engine(settings.DATABASE_URL, echo=False, pool_pre_ping=True)
 
 # Create sessionmaker factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
