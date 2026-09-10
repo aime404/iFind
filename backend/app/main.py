@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
 from app.api.v1.routes_auth import router as auth_router
 from app.api.v1.routes_reports import router as reports_router
+from app.api.v1.routes_matches import router as matches_router
 
 
 # Create FastAPI application instance
@@ -38,6 +39,12 @@ app.include_router(
     reports_router,
     prefix="/api/v1",
     tags=["Reports"]
+)
+
+app.include_router(
+    matches_router,
+    prefix="/api/v1",
+    tags=["Matches"]
 )
 
 

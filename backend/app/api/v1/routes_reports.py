@@ -1,4 +1,5 @@
 from datetime import date
+import logging
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from sqlalchemy import and_, or_, select
@@ -10,8 +11,10 @@ from app.db.models.report import Report, ReportStatus, ReportType
 from app.db.models.user import User
 from app.schemas.report import ReportCreate, ReportResponse, ReportUpdate
 from app.services.image_service import save_upload_image
+from app.services.matching_service import create_matches_for_report
 
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -65,6 +68,13 @@ async def create_report(
     db.add(new_report)
     db.commit()
     db.refresh(new_report)
+    
+    # Attempt to find and create matches for this report
+    # Don't let matching errors crash report creation
+    try:
+        create_matches_for_report(new_report, db)
+    except Exception as e:
+        logger.error(f"Failed to create matches for report {new_report.id}: {str(e)}")
     
     return ReportResponse.model_validate(new_report)
 
