@@ -170,7 +170,6 @@ export const getAuditLogsAdmin = async () => {
   return apiFetch("/admin/audit-logs", { method: "GET" });
 };
 
-
 export const getAdminStats = async () => {
   return apiFetch("/admin/stats", { method: "GET" });
 };

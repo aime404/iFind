@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Bell, AlertCircle } from "lucide-react";
 import * as api from "../services/api";
 
 const Notifications = () => {
@@ -8,7 +6,6 @@ const Notifications = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [markingRead, setMarkingRead] = useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -25,27 +22,18 @@ const Notifications = () => {
     fetchNotifications();
   }, []);
 
-  const handleNotificationClick = async (notification) => {
-    if (!notification.is_read) {
-      setMarkingRead(notification.id);
-      try {
-        const updatedNotification = await api.markNotificationRead(
-          notification.id
-        );
-        setNotifications((prev) =>
-          prev.map((n) =>
-            n.id === notification.id ? updatedNotification : n
-          )
-        );
-      } catch (err) {
-        console.error("Failed to mark as read:", err);
-      } finally {
-        setMarkingRead(null);
-      }
+  const handleMarkRead = async (notificationId) => {
+    setMarkingRead(notificationId);
+    try {
+      const updatedNotification = await api.markNotificationRead(notificationId);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notificationId ? updatedNotification : n))
+      );
+    } catch (err) {
+      alert("Failed to mark notification as read: " + err.message);
+    } finally {
+      setMarkingRead(null);
     }
-
-    // Navigate to matches page
-    navigate("/matches");
   };
 
   if (loading) {
@@ -62,45 +50,35 @@ const Notifications = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-3xl mx-auto px-4">
-        <div className="mb-8 flex items-center gap-3">
-          <Bell size={32} className="text-blue-600" />
-          <h1 className="text-4xl font-bold text-gray-800">Notifications</h1>
-        </div>
+        <h1 className="text-4xl font-bold text-gray-800 mb-8">Notifications</h1>
 
         {error && (
-          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center gap-2">
-            <AlertCircle size={20} />
+          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
             {error}
           </div>
         )}
 
         {notifications.length === 0 ? (
-          <div className="bg-white p-12 rounded-lg shadow-md text-center">
-            <Bell size={48} className="mx-auto mb-4 text-gray-400" />
+          <div className="bg-white p-8 rounded-lg shadow-md text-center">
             <p className="text-gray-600 text-lg">No notifications yet</p>
-            <p className="text-gray-500 text-sm mt-2">
-              You'll see notifications here when matches are found for your reports
-            </p>
           </div>
         ) : (
           <div className="space-y-4">
             {notifications.map((notification) => (
-              <button
+              <div
                 key={notification.id}
-                onClick={() => handleNotificationClick(notification)}
-                disabled={markingRead === notification.id}
-                className={`w-full text-left p-4 rounded-lg border-2 transition-all hover:shadow-md active:scale-95 ${
+                className={`p-4 rounded-lg border-2 transition-all ${
                   notification.is_read
-                    ? "bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                    : "bg-blue-50 border-blue-300 hover:border-blue-400 hover:bg-blue-100 cursor-pointer"
+                    ? "bg-white border-gray-200"
+                    : "bg-blue-50 border-blue-300"
                 }`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     {!notification.is_read && (
                       <div className="inline-block mb-2">
-                        <span className="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                          <Bell size={12} /> NEW
+                        <span className="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">
+                          NEW
                         </span>
                       </div>
                     )}
@@ -118,19 +96,23 @@ const Notifications = () => {
                     </p>
 
                     {notification.related_match_id && (
-                      <p className="text-xs text-gray-600 mt-2 font-mono bg-gray-100 inline-block px-2 py-1 rounded">
-                        Match #{notification.related_match_id}
+                      <p className="text-sm text-gray-600 mt-2">
+                        Match ID: {notification.related_match_id}
                       </p>
                     )}
                   </div>
 
                   {!notification.is_read && (
-                    <div className="text-blue-600 font-semibold text-sm whitespace-nowrap flex-shrink-0">
-                      {markingRead === notification.id ? "..." : "View"}
-                    </div>
+                    <button
+                      onClick={() => handleMarkRead(notification.id)}
+                      disabled={markingRead === notification.id}
+                      className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg whitespace-nowrap flex-shrink-0"
+                    >
+                      {markingRead === notification.id ? "..." : "Mark Read"}
+                    </button>
                   )}
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         )}

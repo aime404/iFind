@@ -1,14 +1,4 @@
 import React, { useState, useEffect } from "react";
-import {
-  Check,
-  X,
-  AlertCircle,
-  Zap,
-  Package,
-  MapPin,
-  Calendar,
-  LayoutGrid,
-} from "lucide-react";
 import * as api from "../services/api";
 
 const MyMatches = () => {
@@ -62,15 +52,15 @@ const MyMatches = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      pending: "bg-yellow-100 text-yellow-800 border-yellow-300",
-      verified: "bg-green-100 text-green-800 border-green-300",
-      rejected: "bg-red-100 text-red-800 border-red-300",
+      pending: "bg-yellow-100 text-yellow-800",
+      verified: "bg-green-100 text-green-800",
+      rejected: "bg-red-100 text-red-800",
     };
     return colors[status] || "bg-gray-100 text-gray-800";
   };
 
   const getReportTypeColor = (type) => {
-    return type === "lost"
+    return type === "LOST"
       ? "bg-orange-100 text-orange-800"
       : "bg-green-100 text-green-800";
   };
@@ -89,29 +79,18 @@ const MyMatches = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-center gap-3">
-          <Zap size={32} className="text-yellow-500" />
-          <div>
-            <h1 className="text-4xl font-bold text-gray-800">My Matches</h1>
-            <p className="text-gray-600 text-sm">
-              Found {matches.length} potential match{matches.length !== 1 ? "es" : ""}
-            </p>
-          </div>
-        </div>
+        <h1 className="text-4xl font-bold text-gray-800 mb-8">My Matches</h1>
 
         {error && (
-          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center gap-2">
-            <AlertCircle size={20} />
+          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
             {error}
           </div>
         )}
 
         {matches.length === 0 ? (
-          <div className="bg-white p-12 rounded-xl shadow-md text-center border border-gray-100">
-            <LayoutGrid size={48} className="mx-auto mb-4 text-gray-400" />
-            <p className="text-gray-600 text-lg font-semibold">No matches found yet</p>
-            <p className="text-gray-500 text-sm mt-2">
-              Upload reports and we'll automatically find matches for you
+          <div className="bg-white p-8 rounded-lg shadow-md text-center">
+            <p className="text-gray-600 text-lg">
+              No matches found. Keep checking back!
             </p>
           </div>
         ) : (
@@ -119,56 +98,45 @@ const MyMatches = () => {
             {matches.map((match) => (
               <div
                 key={match.id}
-                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow border border-gray-100 hover:border-yellow-200"
+                className="bg-white rounded-lg shadow-md overflow-hidden"
               >
                 {/* Match Status Header */}
-                <div className={`px-6 py-5 border-b-2 ${getStatusColor(match.status)} flex justify-between items-center`}>
-                  <div className="flex items-center gap-4">
-                    <div className="bg-white rounded-lg px-4 py-2">
-                      <Zap size={24} className="text-yellow-500" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-bold text-gray-800">
-                        Match #{match.id}
-                      </h2>
-                      <p className="text-sm text-gray-700 flex items-center gap-2">
-                        <Zap size={14} />
-                        Similarity:{" "}
-                        <span className="font-semibold text-yellow-600">
-                          {(match.similarity_score * 100).toFixed(1)}%
-                        </span>
-                      </p>
-                    </div>
+                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-800">
+                      Match #{match.id}
+                    </h2>
+                    <p className="text-sm text-gray-600">
+                      Similarity Score:{" "}
+                      <span className="font-semibold text-blue-600">
+                        {(match.similarity_score * 100).toFixed(1)}%
+                      </span>
+                    </p>
                   </div>
-                  <div className="text-right">
-                    <span
-                      className={`inline-block px-4 py-2 rounded-full text-sm font-bold border-2 ${getStatusColor(
-                        match.status
-                      )}`}
-                    >
-                      {match.status === "pending" && "🔄"}
-                      {match.status === "verified" && "✅"}
-                      {match.status === "rejected" && "❌"}{" "}
-                      {match.status.charAt(0).toUpperCase() + match.status.slice(1)}
-                    </span>
-                  </div>
+                  <span
+                    className={`px-4 py-2 rounded-full text-sm font-semibold ${getStatusColor(
+                      match.status
+                    )}`}
+                  >
+                    {match.status.charAt(0).toUpperCase() + match.status.slice(1)}
+                  </span>
                 </div>
 
                 {/* Reports Side by Side */}
                 <div className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Lost Report */}
-                    <div className="border-2 border-orange-200 rounded-xl p-5 bg-orange-50 hover:bg-orange-100 transition-colors">
+                    <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                       <div className="flex items-center gap-2 mb-4">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${getReportTypeColor(
+                          className={`px-3 py-1 rounded-full text-sm font-semibold ${getReportTypeColor(
                             match.lost_report.report_type
                           )}`}
                         >
-                          📍 {match.lost_report.report_type}
+                          {match.lost_report.report_type}
                         </span>
-                        <span className="text-gray-500 text-xs font-mono">
-                          #{match.lost_report.id}
+                        <span className="text-gray-600 text-sm">
+                          (ID: {match.lost_report.id})
                         </span>
                       </div>
 
@@ -177,50 +145,47 @@ const MyMatches = () => {
                           <img
                             src={`http://127.0.0.1:8000${match.lost_report.photo_url}`}
                             alt={match.lost_report.item_name}
-                            className="w-full h-full object-cover rounded-lg"
+                            className="w-full h-full object-cover"
                           />
                         </div>
                       )}
 
-                      <h3 className="text-lg font-bold text-gray-800 mb-3">
+                      <h3 className="text-lg font-bold text-gray-800 mb-2">
                         {match.lost_report.item_name}
                       </h3>
 
                       <div className="space-y-2 text-sm text-gray-700">
-                        <p className="flex items-center gap-2">
-                          <Package size={16} className="text-purple-600" />
-                          <span><strong>Category:</strong> {match.lost_report.category}</span>
+                        <p>
+                          <strong>Category:</strong> {match.lost_report.category}
                         </p>
-                        <p className="flex items-center gap-2">
-                          <MapPin size={16} className="text-red-600" />
-                          <span><strong>Location:</strong> {match.lost_report.location}</span>
+                        <p>
+                          <strong>Location:</strong> {match.lost_report.location}
                         </p>
-                        <p className="flex items-center gap-2">
-                          <Calendar size={16} className="text-blue-600" />
-                          <span><strong>Date:</strong> {new Date(
+                        <p>
+                          <strong>Date:</strong>{" "}
+                          {new Date(
                             match.lost_report.date_occurred
-                          ).toLocaleDateString()}</span>
+                          ).toLocaleDateString()}
                         </p>
                         <p className="line-clamp-3">
-                          <strong className="text-gray-800">Description:</strong>
-                          <br />
+                          <strong>Description:</strong>{" "}
                           {match.lost_report.description}
                         </p>
                       </div>
                     </div>
 
                     {/* Found Report */}
-                    <div className="border-2 border-green-200 rounded-xl p-5 bg-green-50 hover:bg-green-100 transition-colors">
+                    <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                       <div className="flex items-center gap-2 mb-4">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${getReportTypeColor(
+                          className={`px-3 py-1 rounded-full text-sm font-semibold ${getReportTypeColor(
                             match.found_report.report_type
                           )}`}
                         >
-                          ✅ {match.found_report.report_type}
+                          {match.found_report.report_type}
                         </span>
-                        <span className="text-gray-500 text-xs font-mono">
-                          #{match.found_report.id}
+                        <span className="text-gray-600 text-sm">
+                          (ID: {match.found_report.id})
                         </span>
                       </div>
 
@@ -229,33 +194,30 @@ const MyMatches = () => {
                           <img
                             src={`http://127.0.0.1:8000${match.found_report.photo_url}`}
                             alt={match.found_report.item_name}
-                            className="w-full h-full object-cover rounded-lg"
+                            className="w-full h-full object-cover"
                           />
                         </div>
                       )}
 
-                      <h3 className="text-lg font-bold text-gray-800 mb-3">
+                      <h3 className="text-lg font-bold text-gray-800 mb-2">
                         {match.found_report.item_name}
                       </h3>
 
                       <div className="space-y-2 text-sm text-gray-700">
-                        <p className="flex items-center gap-2">
-                          <Package size={16} className="text-purple-600" />
-                          <span><strong>Category:</strong> {match.found_report.category}</span>
+                        <p>
+                          <strong>Category:</strong> {match.found_report.category}
                         </p>
-                        <p className="flex items-center gap-2">
-                          <MapPin size={16} className="text-red-600" />
-                          <span><strong>Location:</strong> {match.found_report.location}</span>
+                        <p>
+                          <strong>Location:</strong> {match.found_report.location}
                         </p>
-                        <p className="flex items-center gap-2">
-                          <Calendar size={16} className="text-blue-600" />
-                          <span><strong>Date:</strong> {new Date(
+                        <p>
+                          <strong>Date:</strong>{" "}
+                          {new Date(
                             match.found_report.date_occurred
-                          ).toLocaleDateString()}</span>
+                          ).toLocaleDateString()}
                         </p>
                         <p className="line-clamp-3">
-                          <strong className="text-gray-800">Description:</strong>
-                          <br />
+                          <strong>Description:</strong>{" "}
                           {match.found_report.description}
                         </p>
                       </div>
@@ -268,17 +230,15 @@ const MyMatches = () => {
                       <button
                         onClick={() => handleReject(match.id)}
                         disabled={actionLoading === match.id}
-                        className="bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition-all hover:shadow-md active:scale-95"
+                        className="bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white font-bold py-2 px-6 rounded-lg"
                       >
-                        <X size={18} />
                         {actionLoading === match.id ? "Rejecting..." : "Reject"}
                       </button>
                       <button
                         onClick={() => handleVerify(match.id)}
                         disabled={actionLoading === match.id}
-                        className="bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition-all hover:shadow-md active:scale-95"
+                        className="bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-bold py-2 px-6 rounded-lg"
                       >
-                        <Check size={18} />
                         {actionLoading === match.id ? "Verifying..." : "Verify"}
                       </button>
                     </div>

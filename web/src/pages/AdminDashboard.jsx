@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Trash2, Shield, AlertCircle } from "lucide-react";
+import { Trash2, Shield, AlertCircle, Package, Users, GitMerge, Clock } from "lucide-react";
 import * as api from "../services/api";
 
 const AdminDashboard = () => {
@@ -7,13 +7,32 @@ const AdminDashboard = () => {
   const [reports, setReports] = useState([]);
   const [users, setUsers] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("");
   const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(null);
 
   useEffect(() => {
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
     fetchData();
   }, [activeTab]);
+
+  const fetchStats = async () => {
+    setStatsLoading(true);
+    try {
+      const data = await api.getAdminStats();
+      setStats(data);
+    } catch (err) {
+      console.error("Failed to load stats:", err);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -45,6 +64,7 @@ const AdminDashboard = () => {
     try {
       await api.deleteReportAdmin(id);
       setReports((prev) => prev.filter((r) => r.id !== id));
+      fetchStats();
     } catch (err) {
       setError(err.message || "Failed to delete report");
     } finally {
@@ -58,6 +78,10 @@ const AdminDashboard = () => {
     { id: "audit", label: "Audit Log" },
   ];
 
+  const filteredReports = statusFilter
+    ? reports.filter((r) => r.status === statusFilter)
+    : reports;
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -66,6 +90,68 @@ const AdminDashboard = () => {
           <p className="text-gray-600 mt-2">Manage reports, users, and system activity</p>
         </div>
 
+        {statsLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-white rounded-xl shadow-md p-6 animate-pulse h-28" />
+            ))}
+          </div>
+        ) : stats ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+              <div className="flex items-center gap-3 mb-1">
+                <div className="bg-blue-100 p-2 rounded-lg">
+                  <Package size={20} className="text-blue-600" />
+                </div>
+                <p className="text-gray-600 text-sm font-medium">Total Reports</p>
+              </div>
+              <p className="text-3xl font-bold text-gray-800">{stats.total_reports}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                {stats.total_lost} lost &middot; {stats.total_found} found
+              </p>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+              <div className="flex items-center gap-3 mb-1">
+                <div className="bg-yellow-100 p-2 rounded-lg">
+                  <Clock size={20} className="text-yellow-600" />
+                </div>
+                <p className="text-gray-600 text-sm font-medium">Unresolved</p>
+              </div>
+              <p className="text-3xl font-bold text-gray-800">
+                {(stats.reports_by_status.submitted || 0) +
+                  (stats.reports_by_status.under_review || 0)}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">Awaiting a match or review</p>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+              <div className="flex items-center gap-3 mb-1">
+                <div className="bg-green-100 p-2 rounded-lg">
+                  <GitMerge size={20} className="text-green-600" />
+                </div>
+                <p className="text-gray-600 text-sm font-medium">Matches</p>
+              </div>
+              <p className="text-3xl font-bold text-gray-800">{stats.total_matches}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                {stats.matches_by_status.verified || 0} verified &middot;{" "}
+                {stats.matches_by_status.pending || 0} pending
+              </p>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+              <div className="flex items-center gap-3 mb-1">
+                <div className="bg-purple-100 p-2 rounded-lg">
+                  <Users size={20} className="text-purple-600" />
+                </div>
+                <p className="text-gray-600 text-sm font-medium">Total Users</p>
+              </div>
+              <p className="text-3xl font-bold text-gray-800">{stats.total_users}</p>
+              <p className="text-xs text-gray-500 mt-1">Registered accounts</p>
+            </div>
+          </div>
+        ) : null}
+
         {error && (
           <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center gap-2">
             <AlertCircle size={20} />
@@ -73,7 +159,6 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* Tabs */}
         <div className="bg-white rounded-lg shadow-md mb-6 border-b border-gray-200">
           <div className="flex flex-wrap">
             {tabs.map((tab) => (
@@ -92,7 +177,6 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Loading State */}
         {loading && (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -100,10 +184,29 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* Reports Tab */}
         {!loading && activeTab === "reports" && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            {reports.length === 0 ? (
+            <div className="p-4 border-b border-gray-200 flex items-center gap-3">
+              <label className="text-sm font-semibold text-gray-700">
+                Filter by status:
+              </label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+              >
+                <option value="">All statuses</option>
+                <option value="submitted">Submitted</option>
+                <option value="under_review">Under Review</option>
+                <option value="matched">Matched</option>
+                <option value="resolved">Resolved</option>
+              </select>
+              <span className="text-sm text-gray-500 ml-auto">
+                {filteredReports.length} of {reports.length} reports
+              </span>
+            </div>
+
+            {filteredReports.length === 0 ? (
               <div className="p-8 text-center text-gray-600">
                 <AlertCircle size={48} className="mx-auto mb-4 text-gray-400" />
                 <p>No reports found</p>
@@ -137,7 +240,7 @@ const AdminDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {reports.map((report) => (
+                    {filteredReports.map((report) => (
                       <tr
                         key={report.id}
                         className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
@@ -191,7 +294,6 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* Users Tab */}
         {!loading && activeTab === "users" && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             {users.length === 0 ? (
@@ -258,7 +360,6 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* Audit Log Tab */}
         {!loading && activeTab === "audit" && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             {auditLogs.length === 0 ? (

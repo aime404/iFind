@@ -1,15 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import {
-  Search,
-  MapPin,
-  Calendar,
-  Package,
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  Eye,
-} from "lucide-react";
 import * as api from "../services/api";
 
 const BrowseReports = () => {
@@ -56,16 +46,6 @@ const BrowseReports = () => {
     fetchReports();
   };
 
-  const getStatusIcon = (status) => {
-    const icons = {
-      submitted: <Clock size={16} />,
-      under_review: <AlertCircle size={16} />,
-      matched: <CheckCircle size={16} />,
-      resolved: <Eye size={16} />,
-    };
-    return icons[status] || <AlertCircle size={16} />;
-  };
-
   const getStatusBadge = (status) => {
     const colors = {
       submitted: "bg-yellow-100 text-yellow-800",
@@ -77,28 +57,20 @@ const BrowseReports = () => {
   };
 
   const getReportTypeColor = (type) => {
-    return type === "lost"
-      ? "bg-orange-100 text-orange-800"
-      : "bg-green-100 text-green-800";
+    return type === "LOST" ? "bg-orange-100 text-orange-800" : "bg-green-100 text-green-800";
   };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-800">Browse Reports</h1>
-          <p className="text-gray-600 mt-2">
-            Find lost or found items across campus
-          </p>
-        </div>
+        <h1 className="text-4xl font-bold text-gray-800 mb-8">Browse Reports</h1>
 
         {/* Search and Filters */}
-        <div className="bg-white p-6 rounded-xl shadow-md mb-8 border border-gray-100">
+        <div className="bg-white p-6 rounded-lg shadow-md mb-8">
           <form onSubmit={handleSearch} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <label className="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
-                  <Search size={18} className="text-blue-600" />
+                <label className="block text-gray-700 font-medium mb-2">
                   Search
                 </label>
                 <input
@@ -106,35 +78,33 @@ const BrowseReports = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Item name or description"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
               </div>
 
               <div>
-                <label className="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
-                  <Package size={18} className="text-orange-600" />
+                <label className="block text-gray-700 font-medium mb-2">
                   Type
                 </label>
                 <select
                   value={reportType}
                   onChange={(e) => setReportType(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 >
                   <option value="">All Types</option>
-                  <option value="lost">Lost</option>
-                  <option value="found">Found</option>
+                  <option value="LOST">Lost</option>
+                  <option value="FOUND">Found</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
-                  <Package size={18} className="text-purple-600" />
+                <label className="block text-gray-700 font-medium mb-2">
                   Category
                 </label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 >
                   <option value="">All Categories</option>
                   <option value="electronics">Electronics</option>
@@ -146,8 +116,7 @@ const BrowseReports = () => {
               </div>
 
               <div>
-                <label className="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
-                  <MapPin size={18} className="text-red-600" />
+                <label className="block text-gray-700 font-medium mb-2">
                   Location
                 </label>
                 <input
@@ -155,16 +124,15 @@ const BrowseReports = () => {
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="Location"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
               </div>
             </div>
 
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-all hover:shadow-md flex items-center justify-center gap-2"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
             >
-              <Search size={20} />
               Search
             </button>
           </form>
@@ -180,8 +148,7 @@ const BrowseReports = () => {
 
         {/* Error State */}
         {error && (
-          <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg mb-4 flex items-center gap-2">
-            <AlertCircle size={20} />
+          <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg mb-4">
             {error}
           </div>
         )}
@@ -193,69 +160,55 @@ const BrowseReports = () => {
               <Link
                 key={report.id}
                 to={`/reports/${report.id}`}
-                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border border-gray-100 hover:border-blue-200"
+                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
               >
                 {/* Image */}
-                <div className="relative">
-                  {report.photo_url ? (
-                    <div className="h-48 bg-gray-200 overflow-hidden">
-                      <img
-                        src={`http://127.0.0.1:8000${report.photo_url}`}
-                        alt={report.item_name}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                  ) : (
-                    <div className="h-48 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                      <Package size={48} className="text-gray-400" />
-                    </div>
-                  )}
-                  <div className="absolute top-2 right-2 flex gap-2">
+                {report.photo_url && (
+                  <div className="h-48 bg-gray-200 overflow-hidden">
+                    <img
+                      src={`http://127.0.0.1:8000${report.photo_url}`}
+                      alt={report.item_name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+
+                {/* Content */}
+                <div className="p-4">
+                  <div className="flex gap-2 mb-2">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${getReportTypeColor(
+                      className={`px-3 py-1 rounded-full text-sm font-semibold ${getReportTypeColor(
                         report.report_type
                       )}`}
                     >
-                      {report.report_type === "lost" ? "📍" : "✅"} {report.report_type}
+                      {report.report_type}
                     </span>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-5">
-                  <div className="flex items-center gap-2 mb-2">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ${getStatusBadge(
+                      className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusBadge(
                         report.status
                       )}`}
                     >
-                      {getStatusIcon(report.status)}
                       {report.status.replace("_", " ")}
                     </span>
                   </div>
 
-                  <h2 className="text-lg font-bold text-gray-800 mb-3 line-clamp-2 hover:text-blue-600">
+                  <h2 className="text-xl font-bold text-gray-800 mb-2">
                     {report.item_name}
                   </h2>
 
-                  <div className="space-y-2 text-sm text-gray-600 mb-4">
-                    <p className="flex items-center gap-2">
-                      <Package size={16} className="text-purple-500 flex-shrink-0" />
-                      <span className="font-semibold">{report.category}</span>
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <MapPin size={16} className="text-red-500 flex-shrink-0" />
-                      <span className="truncate">{report.location}</span>
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <Calendar size={16} className="text-blue-500 flex-shrink-0" />
-                      <span>{new Date(report.date_occurred).toLocaleDateString()}</span>
-                    </p>
-                  </div>
+                  <p className="text-gray-600 text-sm mb-2">
+                    <strong>Category:</strong> {report.category}
+                  </p>
+                  <p className="text-gray-600 text-sm mb-2">
+                    <strong>Location:</strong> {report.location}
+                  </p>
+                  <p className="text-gray-600 text-sm mb-2">
+                    <strong>Date:</strong>{" "}
+                    {new Date(report.date_occurred).toLocaleDateString()}
+                  </p>
 
-                  <div className="text-blue-600 font-semibold text-sm flex items-center gap-1 hover:gap-2 transition-all">
-                    <Eye size={16} />
-                    View Details
+                  <div className="text-blue-600 font-semibold text-sm mt-4">
+                    View Details →
                   </div>
                 </div>
               </Link>
@@ -265,12 +218,8 @@ const BrowseReports = () => {
 
         {/* Empty State */}
         {!loading && reports.length === 0 && (
-          <div className="bg-white p-12 rounded-xl shadow-md text-center border border-gray-100">
-            <Package size={48} className="mx-auto mb-4 text-gray-400" />
-            <p className="text-gray-600 text-lg font-semibold">No reports found</p>
-            <p className="text-gray-500 text-sm mt-2">
-              Try adjusting your search filters or check back later
-            </p>
+          <div className="text-center py-12">
+            <p className="text-gray-600 text-lg">No reports found</p>
           </div>
         )}
       </div>
