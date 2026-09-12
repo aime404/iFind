@@ -13,12 +13,10 @@ export const AuthProvider = ({ children }) => {
     const storedToken = api.getToken();
     if (storedToken) {
       setTokenState(storedToken);
-      // Fetch user data to verify token is valid
       api
         .getMe()
         .then((userData) => setUser(userData))
         .catch(() => {
-          // Token is invalid, clear it
           api.clearToken();
           setTokenState(null);
         })
@@ -34,7 +32,6 @@ export const AuthProvider = ({ children }) => {
     api.setToken(newToken);
     setTokenState(newToken);
 
-    // Fetch user data
     const userData = await api.getMe();
     setUser(userData);
   };
@@ -49,6 +46,14 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  // Update the current user's profile (full_name and/or password),
+  // then refresh local state so the UI reflects the change immediately.
+  const updateProfile = async (data) => {
+    const updatedUser = await api.updateProfile(data);
+    setUser(updatedUser);
+    return updatedUser;
+  };
+
   const isAuthenticated = !!token;
 
   return (
@@ -59,6 +64,7 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
+        updateProfile,
         loading,
         isAuthenticated,
       }}

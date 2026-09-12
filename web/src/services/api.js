@@ -96,6 +96,13 @@ export const getMe = async () => {
   });
 };
 
+export const updateProfile = async (data) => {
+  return apiFetch("/auth/me", {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+};
+
 // Report endpoints
 export const createReport = async (formData) => {
   return apiFetch("/reports", {

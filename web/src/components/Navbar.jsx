@@ -99,7 +99,10 @@ const Navbar = () => {
 
             {isAuthenticated ? (
               <div className="flex items-center gap-3 ml-4 pl-4 border-l border-gray-200">
-                <div className="text-right">
+                <Link
+                  to="/profile"
+                  className="text-right hover:opacity-75 transition-opacity"
+                >
                   <p className="text-sm font-semibold text-gray-800">
                     {user?.full_name}
                   </p>
@@ -108,7 +111,7 @@ const Navbar = () => {
                       <Shield size={12} /> Admin
                     </p>
                   )}
-                </div>
+                </Link>
                 <button
                   onClick={logout}
                   className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg font-medium transition-all hover:shadow-md flex items-center gap-1"
